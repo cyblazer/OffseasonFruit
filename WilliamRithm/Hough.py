@@ -129,6 +129,7 @@ for contour in hough_contours:
       x = int(M['m10']/M['m00']) 
       y = int(M['m01']/M['m00']) 
 
+  # TODO: do ROI sampling instead of just checking the point, though this works too honestly
   if (mask[y][x] == 0):
     continue
   
