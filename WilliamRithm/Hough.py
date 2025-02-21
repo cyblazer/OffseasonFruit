@@ -21,7 +21,7 @@ yellowHigh = np.array([35, 255, 255])
 # Algorithm details:
 # 1.
 
-img = cv2.imread("imgs/img0.png")
+img = cv2.imread("imgs/adam1.jpg")
 
 dim = (640, 480)
 img = cv2.resize(img, dim)
@@ -31,10 +31,17 @@ img = cv2.resize(img, dim)
 
 # Perspective transform
 # bounds = [(140, 48), (500, 46), (710, 360),  (0, 350)]
-bounds = [(200, 48), (500, 46), (630, 360),  (60, 330)]
+# bounds = [(200, 48), (500, 46), (630, 360),  (60, 330)]
+# adam bounds
+bounds = [(100, 130), (500, 80), (540, 300),  (110, 340)]
 
 matrix = cv2.getPerspectiveTransform(np.float32(bounds), np.float32([[0, 0], [dim[0], 0], dim, [0, dim[1]]]))
 transformed_image = cv2.warpPerspective(img, matrix, dim)
+
+
+#Blur -> For smoothing, helps with canny edge detection. Do it 15 times and it makes it worse though
+for i in range(5):
+  transformed_image = cv2.GaussianBlur(transformed_image,(5,5),0)
 
 # Can erode here if we want, makes contours worse so we don't do it
 # element = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2), (-1, -1))
@@ -70,18 +77,16 @@ cv2.drawContours(mask, contours, -1, 255, thickness=cv2.FILLED)
 element = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10), (-1, -1))
 mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, element)
 
-#Blur -> For smoothing, helps with canny edge detection. Do it 15 times and it makes it worse though
-for i in range(5):
-  transformed_image = cv2.GaussianBlur(transformed_image,(5,5),0)
 #Find Edges
 edges = cv2.Canny(transformed_image, 50, 70)
 
-# Use the HSV mask to clarify canny
-# This is not working right now
-cv2.bitwise_and(edges, mask)
+# # Use the HSV mask to clarify canny
+# # This is not working right now
+# cv2.bitwise_and(edges, mask)
 
 cv2.imshow("contours/mask", mask)
 cv2.imshow("masked edges", edges)
+cv2.imshow("transformed", transformed_image)
 
 #Build hough lines
 pixels_for_line = 10
@@ -92,14 +97,17 @@ if linesP is not None:
     for i in range(0, len(linesP)):
         l = linesP[i][0]
         cv2.line(hough, (l[0], l[1]), (l[2], l[3]), (0,0,255), 3, cv2.LINE_AA)
-        cv2.line(raw_hough, (l[0], l[1]), (l[2], l[3]), 255, 10, cv2.LINE_AA)        
+        cv2.line(raw_hough, (l[0], l[1]), (l[2], l[3]), 255, 10, cv2.LINE_AA)  
 
-cv2.bitwise_and(raw_hough, mask)
+# ALSO NOT WORKIGN RN WTF
+# cv2.bitwise_and(raw_hough, mask)
 
 hough_contours, _ = cv2.findContours( 
     raw_hough, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
 
 # SHAPE DETECTION
+
+coords = []
 
 for contour in hough_contours:
   # Skip first thing cuz it just works like that
@@ -121,6 +129,9 @@ for contour in hough_contours:
       x = int(M['m10']/M['m00']) 
       y = int(M['m01']/M['m00']) 
 
+  if (mask[y][x] == 0):
+    continue
+  
   # shape detection
   # if len(approx) == 4: 
   #     cv2.putText(raw_hough, 'Quadrilateral', (x, y), 
@@ -139,6 +150,7 @@ for contour in hough_contours:
   #                 cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2) 
       
   cv2.circle(raw_hough, (x, y), 3, (255, 0, 0), 1)
+  coords.append([x, y])
 
 for bound in bounds:
   cv2.circle(img, bound, 2, (255, 0, 0), 2)

@@ -4,7 +4,8 @@ import numpy as np
 asdf = []
 
 
-img = cv2.imread("imgs/img1.png")
+# img = cv2.imread("imgs/img1.png")
+img = cv2.imread("img3.jpg")
 # make the img actually visible
 img = cv2.resize(img, (600, 800), img)
 
