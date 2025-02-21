@@ -43,7 +43,7 @@ matrix = cv2.getPerspectiveTransform(np.float32(bounds), np.float32([[0, 0], [di
 transformed_image = cv2.warpPerspective(img, matrix, dim)
 
 colorImg = transformed_image.copy()
-colorImg = cv2.cvtColor(colorImg, cv2.COLOR_RGB2HSV)
+colorImg = cv2.cvtColor(colorImg, cv2.COLOR_BGR2HSV)
 colorImg = cv2.inRange(colorImg, lowHSV, highHSV)
 
 
