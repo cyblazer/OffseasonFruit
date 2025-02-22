@@ -69,19 +69,14 @@ if linesP is not None:
         l = linesP[i][0]
         cv2.line(raw_hough, (l[0], l[1]), (l[2], l[3]), 255, 10, cv2.LINE_AA)  
 
-hough_contours, _ = cv2.findContours( 
+shape_contours, _ = cv2.findContours( 
     raw_hough, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
 
 # SHAPE DETECTION
 
 coords = []
 
-for contour in hough_contours:
-  # Skip first thing cuz it just works like that
-  if i == 0: 
-    i = 1
-    continue
-
+for contour in shape_contours[1:]:
   # cv2.approxPloyDP() function to approximate the shape 
   approx = cv2.approxPolyDP( 
       contour, 0.01 * cv2.arcLength(contour, True), True) 
