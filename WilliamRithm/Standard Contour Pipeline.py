@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import math
 import Transforms as ref
+import HSV
 
 # Algorithm details:
 # 1. Undistort camera
@@ -35,16 +36,14 @@ bounds = [(200, 48), (500, 46), (630, 360),  (60, 330)]
 matrix = cv2.getPerspectiveTransform(np.float32(bounds), np.float32([[0, 0], [dim[0], 0], dim, [0, dim[1]]]))
 transformed_image = cv2.warpPerspective(img, matrix, dim)
 
-edges = cv2.Canny(img, 100, 350)
-edges = cv2.warpPerspective(edges, matrix, dim)
+mat = transformed_image.copy()
+mat = cv2.cvtColor(mat, cv2.COLOR_BGR2HSV)
+threshold = cv2.inRange(mat, HSV.blueLow, HSV.blueHigh)
 
-contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-contours = [contour for contour in contours if cv2.contourArea(contour) > CONTOUR_THRESH_LOW and cv2.contourArea(contour) < CONTOUR_THRESH_HIGH]
+contours, _ = cv2.findContours(threshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 cv2.drawContours(transformed_image, contours, -1, color=(0, 255, 0), thickness=2)
 
-cv2.imshow("edges", edges)
 cv2.imshow("transformed", transformed_image)
 
 cv2.waitKey(0)
