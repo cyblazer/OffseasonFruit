@@ -66,32 +66,33 @@ satMask = transformed_image.copy()
 satMask = cv2.cvtColor(satMask, cv2.COLOR_RGB2HSV)
 satMask = cv2.inRange(satMask, np.array([0, 110, 0]), np.array([255, 255, 255]), satMask)
 
+cv2.imshow("satmask", satMask)
 # contours.sort(key=cv2.contourArea)
 
 samples = contours
 
-# for contour in contours:
-#     mask = np.zeros(transformed_image.shape[:2], np.uint8)
-#     cv2.drawContours(mask, [np.intp(cv2.boxPoints(cv2.minAreaRect(contour)))], -1, 255, cv2.FILLED)
+for contour in contours:
+    mask = np.zeros(transformed_image.shape[:2], np.uint8)
+    cv2.drawContours(mask, [np.intp(cv2.boxPoints(cv2.minAreaRect(contour)))], -1, 255, cv2.FILLED)
 
-#     maskedImg = cv2.bitwise_and(colorImg, colorImg, mask=mask)
+    maskedImg = cv2.bitwise_and(colorImg, colorImg, mask=mask)
 
-#     vals = cv2.mean(maskedImg)
+    vals = cv2.mean(maskedImg)
 
-#     area = cv2.contourArea(contour)
+    area = cv2.contourArea(contour)
 
-#     satVal = vals[0] * transformed_image.shape[0] * transformed_image.shape[1] / area
+    satVal = vals[0] * transformed_image.shape[0] * transformed_image.shape[1] / area
 
-#     satVal /= 255.0
+    satVal /= 255.0
 
-#     # print(satVal)
+    # print(satVal)
 
-#     if (satVal > 0.5):
-#         samples.append(contour)
+    if (satVal > 0.5):
+        samples.append(contour)
 
-#         # remove from satmask
-#         cv2.bitwise_not(mask, mask)
-#         satMask = cv2.bitwise_and(satMask, satMask, mask=mask)
+        # remove from satmask
+        cv2.bitwise_not(mask, mask)
+        satMask = cv2.bitwise_and(satMask, satMask, mask=mask)
 
 
 def filterByRatio(sample) -> bool:
@@ -131,7 +132,6 @@ cv2.polylines(img, [np.int32(bounds)], True, (255, 0, 0), 5)
 # display image
 cv2.imshow("main", img)
 cv2.imshow("edges", edges)
-cv2.imshow("sat", satMask)
 cv2.imshow("done", transformed_image)
 cv2.imshow("yellow", colorImg)
 
