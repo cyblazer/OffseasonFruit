@@ -42,6 +42,64 @@ contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 contours = [contour for contour in contours if cv2.contourArea(contour) > CONTOUR_THRESH_LOW and cv2.contourArea(contour) < CONTOUR_THRESH_HIGH]
 
+def filterByRatio(sample) -> bool:
+    if len(sample) != 4:
+        return False
+
+    #sample = cv2.boxPoints(cv2.minAreaRect(sample))
+
+    width = np.linalg.norm(sample[0] - sample[1])
+    length = np.linalg.norm(sample[1] - sample[2])
+
+    ratio = length / width
+    ratioInverted = width / length
+
+    area = length * width
+
+    MIN_AREA = 0
+    MAX_AREA = 1000000000
+    
+    if (area < MIN_AREA) or (area > MAX_AREA):
+        return False
+
+    MIN_RATIO = 2
+    MAX_RATIO = 1000
+
+    if ((ratio > MIN_RATIO) and (ratio < MAX_RATIO)) or ((ratioInverted > MIN_RATIO) and (ratioInverted < MAX_RATIO)):
+        return True
+    return False
+
+def mapToQuad(sample):
+    arcLength = cv2.arcLength(sample, True)
+    epsilon = 0.01
+
+    output = cv2.approxPolyDP(sample, epsilon * arcLength, True)
+    while len(output) > 4:
+        epsilon += 0.005
+        output = cv2.approxPolyDP(sample, epsilon * arcLength, True)
+
+    return output
+
+def filterByRectangleness(sample) -> bool:
+    contourArea = cv2.contourArea(sample)
+    rectArea = cv2.contourArea(cv2.boxPoints(cv2.minAreaRect(sample)))
+
+    ratio = contourArea / rectArea
+
+    if ratio > 1.5 or ratio < 0.5:
+        return False
+    return True
+
+#contours = [np.intp(cv2.boxPoints(cv2.minAreaRect(sample))) for sample in contours]
+
+#contours = [cv2.approxPolyDP(contour, 0.025 * cv2.arcLength(contour, True), True) for contour in contours]
+
+contours = list(map(mapToQuad, contours))
+
+contours = list(filter(filterByRatio, contours))
+
+contours = list(filter(filterByRectangleness, contours))
+
 cv2.drawContours(transformed_image, contours, -1, color=(0, 255, 0), thickness=2)
 
 points = []
@@ -53,7 +111,6 @@ for contour in contours:
       y = int(M['m01']/M['m00']) 
       points.append([x, y])
       cv2.circle(edges, (x, y), 2, 255, 2)
-
 
 cv2.imshow("edges", edges)
 cv2.imshow("transformed", transformed_image)
