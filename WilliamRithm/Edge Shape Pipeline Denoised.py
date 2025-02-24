@@ -11,6 +11,8 @@ import Transforms as ref
 # 5. Filter based on aspect ratio and minimum area
 # 6. Draw contours if needed
 
+#denoising failed attempt
+
 img = cv2.imread("imgs/img3.jpg")
 
 dim = (640, 480)
@@ -41,17 +43,20 @@ edges = cv2.warpPerspective(edges, matrix, dim)
 for i in range(0):
   edges = cv2.GaussianBlur(edges,(5,5),0)
 
+cv2.imshow("predenoise", edges)
+
 #Edge Noise Mask
-empty = np.zeros(transformed_image.shape[:2], np.uint8)
-edge_contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+noise = np.ones_like(edges, dtype=np.uint8) * 255
+edge_contours, _ = cv2.findContours(edges.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
 for contour in edge_contours:
-   if (len(contour) < 50):
-      cv2.drawContours(empty, contour, -1, 255, thickness=cv2.FILLED)
-cv2.bitwise_not(empty, empty)
-cv2.imshow("empty", empty)
+   if (len(contour) < 5):
+      cv2.drawContours(noise, contour, -1, 0, thickness=2)
 
-edges = cv2.bitwise_and(edges, empty)
+# cv2.drawContours(noise, removal, -1, 0, thickness=cv2.FILLED)
+cv2.imshow("noise", noise)
+
+edges = cv2.bitwise_and(edges, edges, mask=noise)
 cv2.imshow("post denoise", edges)
 # empty is white for empty space, black for stuff you want to remove
 # in order to merge you bitwise and 
@@ -69,11 +74,9 @@ for contour in contours:
   if M['m00'] != 0.0: 
       x = int(M['m10']/M['m00']) 
       y = int(M['m01']/M['m00']) 
-      points.append([x, y])
-      cv2.circle(edges, (x, y), 2, 255, 2)
+      points.append([x, y]) 
+      cv2.circle(transformed_image, (x, y), 2, 255, 2)
 
-
-cv2.imshow("edges", edges)
 cv2.imshow("transformed", transformed_image)
 
 cv2.waitKey(0)
