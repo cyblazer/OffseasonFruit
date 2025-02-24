@@ -78,5 +78,3 @@ for contour in contours:
       cv2.circle(transformed_image, (x, y), 2, 255, 2)
 
 cv2.imshow("transformed", transformed_image)
-
-cv2.waitKey(0)
