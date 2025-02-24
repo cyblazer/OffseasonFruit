@@ -19,8 +19,8 @@ matrix = cv2.getPerspectiveTransform(np.float32(bounds), np.float32([[0, 0], [di
 transformed_image = cv2.warpPerspective(img, matrix, dim)
 
 #Blur -> For smoothing, helps with canny edge detection. Do it 15 times and it makes it worse though
-for i in range(2):
-  transformed_image = cv2.GaussianBlur(transformed_image,(5,5),0)
+# for i in range(2):
+#   transformed_image = cv2.GaussianBlur(transformed_image,(5,5),0)
 
 # Can erode here if we want, makes contours worse so we don't do it
 # element = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2), (-1, -1))
@@ -54,18 +54,18 @@ mask = np.zeros(transformed_image.shape[:2], np.uint8)
 cv2.drawContours(mask, contours, -1, 255, thickness=cv2.FILLED)
 
 # Erode the contours because of noise
-element = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10), (-1, -1))
-mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, element)
+# element = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10), (-1, -1))
+# mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, element)
 
 #Find Edges
-edges = cv2.Canny(transformed_image, 50, 70)
+edges = cv2.Canny(transformed_image, 50, 150)
 
 #Edge Noise Mask
 empty = np.zeros(transformed_image.shape[:2], np.uint8)
 edge_contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 for contour in edge_contours:
-   if (len(contour) < 30):
-      cv2.drawContours(empty, contour, -1, 255, thickness=cv2.FILLED)
+   if (len(contour) < 10):
+      cv2.drawContours(empty, contour, -1, 255, 2)
 cv2.bitwise_not(empty, empty)
 
 edges = cv2.bitwise_and(edges, empty)
@@ -74,7 +74,7 @@ edges = cv2.bitwise_and(edges, empty)
 
 #Build hough lines
 pixels_for_line = 10
-linesP = cv2.HoughLinesP(edges, 1, 1 * np.pi/180, pixels_for_line, None, 10, 15)
+linesP = cv2.HoughLinesP(edges, 1, 1 * np.pi/180, pixels_for_line, None, 10, 20)
 
 # Draw the lines
 if linesP is not None:
