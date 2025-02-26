@@ -12,7 +12,7 @@ import HSV
 # 5. Filter based on aspect ratio and minimum area
 # 6. Draw contours if needed
 
-img = cv2.imread("imgs/img3.jpg")
+img = cv2.imread("new/new1.jpg")
 
 dim = (640, 480)
 #img.resize(dim)
