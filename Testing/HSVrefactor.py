@@ -20,6 +20,15 @@ class HSVdropper:
 
     cv2.namedWindow(self.window_name) #Has to be initialized already for callback to reference
     cv2.setMouseCallback(self.window_name, self.combined_callback)
+        
+  def tuple_mean(self):
+    print(f"{[sum(x) / len(x) for x in zip(*self.hsv)]}")
+
+  def tuple_max(self):
+    print(f"{[max(x) for x in zip(*self.hsv)]}")
+     
+  def tuple_min(self):
+    print(f"{[min(x) for x in zip(*self.hsv)]}")
 
   def draw_text(self, text, x, y):
     x = max(0, x)
@@ -42,15 +51,8 @@ class HSVdropper:
         h, s, v = hsv[y, x]
         array = [h, s, v]
         self.hsv.append(array)
-        
-  def tuple_mean(self):
-    print(f"{[sum(x) / len(x) for x in zip(*self.hsv)]}")
-
-  def tuple_max(self):
-    print(f"{[max(x) for x in zip(*self.hsv)]}")
-     
-  def tuple_min(self):
-    print(f"{[min(x) for x in zip(*self.hsv)]}")
+        self.tuple_max()
+        self.tuple_min()
 
   def run(self):
       print(f"Frame size: {int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))} x {int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))}")
