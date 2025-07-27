@@ -6,6 +6,8 @@ capture = cv2.VideoCapture(1)
 
 index = 0
 
+capture.set(cv2.CAP_PROP_EXPOSURE, -9) # Set a manual exposure value
+
 while capture.isOpened():
   success, img = capture.read()
 
