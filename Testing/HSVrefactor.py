@@ -1,10 +1,12 @@
 import cv2
 import numpy as np
+import time
 
 class HSVdropper:
   def __init__(self, camera_index=1):
     self.window_name = "stream"
     self.cap = cv2.VideoCapture(camera_index)
+    self.prev_time = time.time()
 
     self.frame = None
 
@@ -54,15 +56,22 @@ class HSVdropper:
         self.tuple_max()
         self.tuple_min()
 
+  def getUVCFPS(self):
+    prev_time = self.prev_time
+    self.prev_time = time.time()
+    return 1.0/(time.time() - prev_time)
+
   def run(self):
       print(f"Frame size: {int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))} x {int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))}")
       while True:
           ret, self.frame = self.cap.read()
           if not ret:
               print("Error: Failed to grab frame")
-              break
+              continue
 
           self.draw_text(f"HSV H({self.H}) S({self.S}) V({self.V})", 50, int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) - 50)
+          self.draw_text(f"FPS: {round(self.getUVCFPS(), 1)}", 50, 50)
+          self.draw_text(f"Dimensions: {self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)}x{self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)}", 50, 100)
           # Always copy frame before displaying (so text can be drawn on it)
           # self.display_frame = self.frame.copy()
 
